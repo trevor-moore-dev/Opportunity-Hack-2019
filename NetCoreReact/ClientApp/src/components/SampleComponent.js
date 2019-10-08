@@ -61,14 +61,14 @@ class SampleComponent extends Component {
 		}
 		else {
 			// sample fetch:
-			// fetch(config.AUTHENTICATED_SAMPLE_POST_URL, {
-				// method: 'POST',
-				// headers: {
-					// 'Content-Type': 'application/json',
-					// 'Authorization': TryGetToken(this.props.auth.user) // Need this for every request to endpoints that use Authorization.
-				// },
-				// body: JSON.stringify({ Name: this.state.input, Wishlist: this.state.textArea })
-			// });
+			fetch(config.AUTHENTICATED_SAMPLE_POST_URL, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': TryGetToken(this.props.auth.user) // Need this for every request to endpoints that use Authorization.
+				},
+				body: JSON.stringify({ Name: this.state.input, Wishlist: this.state.textArea })
+			});
 			// .then((response) => {
 				// return response.json();
 			// })

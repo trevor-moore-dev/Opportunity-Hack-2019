@@ -6,11 +6,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.ML;
+using NetCoreReact.Models.ML;
 using NetCoreReact.Services.Business;
 using NetCoreReact.Services.Data;
 using NetCoreReact.Services.WebSocket;
-using System.Runtime.InteropServices;
 using System.Text;
+using NetCoreReact.Services.ML;
+using NetCoreReact.Services.ML.Interfaces;
 
 namespace NetCoreReact
 {
@@ -71,6 +74,8 @@ namespace NetCoreReact
 			});
 
 			services.AddSignalR();
+			services.AddPredictionEnginePool<PredictionInput, PredictionOutput>()
+				.FromFile(modelName: "MLModel", filePath: "MLModels/MLModel.zip", watchForChanges: true);
 
 			// Change development environment here (connection string to db or anything else necessary):
 			if (CurrentEnvironment.IsDevelopment())
@@ -85,6 +90,7 @@ namespace NetCoreReact
 			// Inject dependencies here:
 			services.AddSingleton<ISampleService, SampleService>();
 			services.AddScoped<IAuthenticationService, AuthenticationService>();
+			services.AddScoped<IPredictionService, PredictionService>();
 
 			// In production, the React files will be served from this directory:
 			services.AddSpaStaticFiles(configuration =>
