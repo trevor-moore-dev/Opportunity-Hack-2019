@@ -1,0 +1,2 @@
+Run this command while in the 'ClientApp' directory of the project:
+npm install @aspnet/signalr js-cookie jsonwebtoken react-google-login react-redux redux redux-logger redux-thunk eslint-config-react-app babel-eslint
