@@ -14,6 +14,8 @@ using NetCoreReact.Services.WebSocket;
 using System.Text;
 using NetCoreReact.Services.ML;
 using NetCoreReact.Services.ML.Interfaces;
+using Microsoft.ML;
+using Microsoft.ML.Data;
 
 namespace NetCoreReact
 {
@@ -75,7 +77,7 @@ namespace NetCoreReact
 
 			services.AddSignalR();
 			services.AddPredictionEnginePool<PredictionInput, PredictionOutput>()
-				.FromFile(modelName: "MLModel", filePath: "MLModels/MLModel.zip", watchForChanges: true);
+				.FromFile(modelName: "MLModel", filePath: Configuration["MLModels:SentimentMLModelFilePath"], watchForChanges: true);
 
 			// Change development environment here (connection string to db or anything else necessary):
 			if (CurrentEnvironment.IsDevelopment())
@@ -89,8 +91,16 @@ namespace NetCoreReact
 
 			// Inject dependencies here:
 			services.AddSingleton<ISampleService, SampleService>();
-			services.AddScoped<IAuthenticationService, AuthenticationService>();
-			services.AddScoped<IPredictionService, PredictionService>();
+			services.AddSingleton<IAuthenticationService, AuthenticationService>();
+			services.AddSingleton<IPredictionService, PredictionService>();
+			services.AddSingleton<MLContext>();
+			services.AddSingleton<ITransformer, TransformerChain<ITransformer>>((context) =>
+			{
+				DataViewSchema predictionPipelineSchema;
+				return (TransformerChain<ITransformer>)context
+					.GetRequiredService<MLContext>()
+					.Model.Load(Configuration["MLModels:SentimentMLModelFilePath"], out predictionPipelineSchema);
+			});
 
 			// In production, the React files will be served from this directory:
 			services.AddSpaStaticFiles(configuration =>
