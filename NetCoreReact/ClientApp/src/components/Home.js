@@ -32,7 +32,7 @@ class Home extends Component {
 
 				<div className="form-horizontal">
 					<center>
-						<button className="btn btn-primary hidden-print custom-green" onClick={this.printPage}><span className="glyphicon glyphicon-print" aria-hidden="true"></span> Print</button>
+						<button className="btn btn-primary hidden-print custom-blue" onClick={this.printPage}><span className="glyphicon glyphicon-print" aria-hidden="true"></span> Print</button>
 					</center>
 				</div>
 			</div>

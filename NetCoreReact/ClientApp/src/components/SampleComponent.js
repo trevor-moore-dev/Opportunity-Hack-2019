@@ -149,7 +149,7 @@ class SampleComponent extends Component {
 
 							<div className="form-group">
 								<div className="col-md-offset-2 col-md-10">
-									<input type="submit" value="Submit" name="myButton" id="myButton" className="btn btn-default custom-green" />
+									<input type="submit" value="Submit" name="myButton" id="myButton" className="btn btn-default custom-blue" />
 								</div>
 							</div>
 
