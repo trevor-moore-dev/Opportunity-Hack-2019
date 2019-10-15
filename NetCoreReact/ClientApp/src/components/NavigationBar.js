@@ -1,63 +1,145 @@
-﻿import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem } from 'reactstrap';
-import { withRouter, NavLink, Link } from 'react-router-dom';
-import { UserIsValid } from '../helpers/authHelper';
-import logo from '../resources/images/opportunity-hack-logo.png';
-import '../resources/css/NavigationBar.css';
-import React, { Component } from 'react';
-import '../resources/css/Custom.css';
-import { connect } from 'react-redux';
+﻿import React, { useState } from "react";
+import { makeStyles, fade } from "@material-ui/core/styles";
+import AppBar from "@material-ui/core/AppBar";
+import Toolbar from "@material-ui/core/Toolbar";
+import Button from "@material-ui/core/Button";
+import IconButton from "@material-ui/core/IconButton";
+import MenuIcon from "@material-ui/icons/Menu";
+import clsx from "clsx";
+import { Link } from "react-router-dom";
+import Logo from "./Logo";
+import SearchIcon from "@material-ui/icons/Search";
+import InputBase from "@material-ui/core/InputBase";
+import Login from "./Login";
+import useAuth from "../hooks/useAuth";
 
-class NavigationBar extends Component {
-	static displayName = NavigationBar.name;
+const drawerWidth = 240;
 
-	constructor (props) {
-		super(props);
-		this.state = {
-			collapsed: true
-		};
-		this.toggleNavbar = this.toggleNavbar.bind(this);
-	}
+const useStyles = makeStyles(theme => ({
+  root: {
+    flexGrow: 1
+  },
+  grow: {
+    flexGrow: 1
+  },
+  menuButton: {
+    marginRight: theme.spacing(2)
+  },
+  appBarShift: {
+    width: `calc(100% - ${drawerWidth}px)`,
+    marginLeft: drawerWidth,
+    transition: theme.transitions.create(["margin", "width"], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen
+    })
+  },
+  search: {
+    position: "relative",
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: fade(theme.palette.common.white, 0.15),
+    "&:hover": {
+      backgroundColor: fade(theme.palette.common.white, 0.25)
+    },
+    marginLeft: 0,
+    width: "100%",
+    [theme.breakpoints.up("sm")]: {
+      marginLeft: theme.spacing(1),
+      width: "auto"
+    }
+  },
+  searchIcon: {
+    width: theme.spacing(7),
+    height: "100%",
+    position: "absolute",
+    pointerEvents: "none",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  inputRoot: {
+    color: "inherit"
+  },
+  inputInput: {
+    padding: theme.spacing(1, 1, 1, 7),
+    transition: theme.transitions.create("width"),
+    width: "100%",
+    [theme.breakpoints.up("sm")]: {
+      width: 120,
+      "&:focus": {
+        width: 200
+      }
+    }
+  },
+  button: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1)
+  }
+}));
 
-	toggleNavbar () {
-		this.setState({
-			collapsed: !this.state.collapsed
-		});
-	}
+export default function NavigationBar({ handleDrawerOpen, open }) {
+  const classes = useStyles();
+  const [loginOpen, setLoginOpen] = useState(false);
+  const { getToken, logout, authState } = useAuth();
+  const token = getToken();
 
-	render() {
-		let userIsValid = UserIsValid(this.props.auth);
-		return (
-			<header>
-				<Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" light>
-					<Container>
-						<img src={logo} alt="Holly" className="custom-image" />
-						<NavbarBrand tag={Link} to="/">Opportunity Hack 2019</NavbarBrand>
-						<NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
-						<Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
-							<ul className="navbar-nav flex-grow">
-								<NavItem>
-									<NavLink exact className="text-dark nav-link" to='/'>Home</NavLink>
-								</NavItem>
-								<NavItem>
-									<NavLink exact className="text-dark nav-link" to='/sample-route'>Sample Page</NavLink>
-								</NavItem>
-								<NavItem>
-									<NavLink exact className="text-dark nav-link" to={userIsValid ? '/logout' : '/login'}>{userIsValid ? 'Logout' : 'Login'}</NavLink>
-								</NavItem>
-							</ul>
-						</Collapse>
-					</Container>
-				</Navbar>
-			</header>
-		);
-	}
-};
-
-const mapStateToProps = (state) => {
-	return {
-        auth: state.auth,
-        signalR: state.signalR
-	};
-};
-
-export default withRouter(connect(mapStateToProps)(NavigationBar));
+  return (
+    <div className={classes.root}>
+      <AppBar
+        position="fixed"
+        className={clsx(classes.appBar, {
+          [classes.appBarShift]: open
+        })}
+      >
+        <Toolbar>
+          {!open && (
+            <IconButton
+              edge="start"
+              className={classes.menuButton}
+              color="inherit"
+              aria-label="Menu"
+              onClick={handleDrawerOpen}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+          {!open && <Logo />}
+          <div className={classes.search}>
+            <div className={classes.searchIcon}>
+              <SearchIcon />
+            </div>
+            <InputBase
+              placeholder="Search…"
+              classes={{
+                root: classes.inputRoot,
+                input: classes.inputInput
+              }}
+              inputProps={{ "aria-label": "search" }}
+            />
+          </div>
+          <Button color="inherit" className={classes.button} variant="outlined">
+            About
+          </Button>
+          <div className={classes.grow} />
+          {authState.isAuthenticated ? (
+            <Button
+              color="inherit"
+              onClick={() => logout()}
+              className={classes.button}
+            >
+              Logout
+            </Button>
+          ) : (
+            <Button
+              color="inherit"
+              className={classes.button}
+              onClick={() => setLoginOpen(true)}
+            >
+              Login
+            </Button>
+          )}
+        </Toolbar>
+      </AppBar>
+      <Login open={loginOpen} close={() => setLoginOpen(false)} />
+    </div>
+  );
+}

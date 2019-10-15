@@ -9,8 +9,10 @@ namespace NetCoreReact.Services.Business
 {
 	public class AuthenticationService : IAuthenticationService
 	{
-		public async Task<dynamic> AuthenticateGoogleToken(TokenModel token, HttpResponse response)
+		public async Task<Response> AuthenticateGoogleToken(TokenModel token, HttpResponse response)
 		{
+            var resonse = new DataResponse<string>();
+
 			try
 			{
 				var payload = await GoogleJsonWebSignature.ValidateAsync(token.tokenId, new GoogleJsonWebSignature.ValidationSettings());
@@ -18,14 +20,19 @@ namespace NetCoreReact.Services.Business
 
 				LoggerHelper.Log(payload.ExpirationTimeSeconds.ToString());
 				CookieHelper.AddCookie(response, "User-Email", payload.Email);
-				CookieHelper.AddCookie(response, "Authorization-Token", jwt.token);
+				CookieHelper.AddCookie(response, "Authorization-Token", jwt);
 
-				return jwt;
-			}
+                resonse.Success = true;
+                resonse.Data = jwt;
+
+            }
 			catch (Exception e)
 			{
-				throw e;
-			}
-		}
+                resonse.AddError("*", "Error authenticating with Google");
+            }
+
+            return resonse;
+
+        }
 	}
 }

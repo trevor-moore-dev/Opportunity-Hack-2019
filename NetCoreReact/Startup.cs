@@ -16,6 +16,8 @@ using NetCoreReact.Services.ML;
 using NetCoreReact.Services.ML.Interfaces;
 using Microsoft.ML;
 using Microsoft.ML.Data;
+using NetCoreReact.Attributes;
+using Newtonsoft.Json;
 
 namespace NetCoreReact
 {
@@ -50,9 +52,15 @@ namespace NetCoreReact
 					});
 			});
 
-			services.AddControllersWithViews();
+            services.AddControllersWithViews(options =>
+            {
+                options.Filters.Add(typeof(ValidateModelStateAttribute));
+            }).AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+            });
 
-			services.AddAuthentication()
+            services.AddAuthentication()
 				.AddJwtBearer(cfg =>
 				{
 					cfg.RequireHttpsMetadata = false;

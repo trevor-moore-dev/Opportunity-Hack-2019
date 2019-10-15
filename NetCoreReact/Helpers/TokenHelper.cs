@@ -9,7 +9,7 @@ namespace NetCoreReact.Helpers
 {
     public class TokenHelper
     {
-        public static dynamic GenerateToken(string email)
+        public static string GenerateToken(string email)
         {
 			var claims = new[]
 			{
@@ -29,10 +29,8 @@ namespace NetCoreReact.Helpers
 				signingCredentials: creds
 			);
 
-			return new
-			{
-				token = new JwtSecurityTokenHandler().WriteToken(token)
-			};
-		}
+            return new JwtSecurityTokenHandler().WriteToken(token);
+
+        }
     }
 }

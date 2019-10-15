@@ -1,22 +1,33 @@
-import Cookies from 'js-cookie';
+const initialState = {
+  isAuthenticated: false,
+  token: "",
+  user: {},
+  checkedForAuth: false
+};
 
-const authReducer = (state = {
-    user: '',
-    isAuthenticated: false
-}, action) => {
-    switch (action.type) {
-		case "LOGIN":
-            state = { ...state, user: action.payload, isAuthenticated: true };
-            break;
-		case "LOGOUT":
-			Cookies.remove('Authorization-Token');
-			Cookies.remove('User-Email');
-            state = { ...state, user: '', isAuthenticated: false };
-            break;
-        default:
-            break;
-    };
-    return state;
+const authReducer = (state, action) => {
+  state = state || initialState;
+
+  switch (action.type) {
+    case "LOGIN":
+      return {
+        ...state,
+        user: action.payload,
+        isAuthenticated: true,
+        token: action.token
+      };
+
+    case "LOGOUT":
+      return {
+        ...initialState
+      };
+
+    case "CHECKED_FOR_AUTH":
+      return { ...state, checkedForAuth: true };
+
+    default:
+      return state;
+  }
 };
 
 export default authReducer;

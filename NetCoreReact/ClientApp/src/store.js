@@ -1,13 +1,15 @@
-import { createStore, combineReducers, applyMiddleware } from 'redux';
-import signalR from './reducers/signalRReducer';
-import { createLogger } from 'redux-logger';
-import auth from './reducers/authReducer';
-import thunk from 'redux-thunk';
+import { createStore, combineReducers, applyMiddleware, compose } from "redux";
+import signalR from "./reducers/signalRReducer";
+import { createLogger } from "redux-logger";
+import auth from "./reducers/authReducer";
+import thunk from "redux-thunk";
 
-export default createStore(combineReducers({
+const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
+export default createStore(
+  combineReducers({
     auth,
     signalR
-}),
-    {},
-    applyMiddleware(createLogger(), thunk)
+  }),
+  {},
+  composeEnhancers(applyMiddleware(createLogger(), thunk))
 );
