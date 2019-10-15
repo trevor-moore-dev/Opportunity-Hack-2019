@@ -12,6 +12,7 @@ using NetCoreReact.Services.Business;
 using NetCoreReact.Services.Data;
 using NetCoreReact.Services.WebSocket;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using NetCoreReact.Services.ML;
 using NetCoreReact.Services.ML.Interfaces;
 using Microsoft.ML;
@@ -96,6 +97,9 @@ namespace NetCoreReact
 			{
 				services.AddSingleton<ISampleDAO>(service => new SampleDAO(Configuration["ConnectionStrings:AzureDB"]));
 			}
+
+            //Entity Framework Core
+            services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(Configuration["ConnectionStrings:AzureDB"]));
 
 			// Inject dependencies here:
 			services.AddSingleton<ISampleService, SampleService>();
