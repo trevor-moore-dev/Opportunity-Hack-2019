@@ -4,6 +4,8 @@ using System;
 using System.Threading.Tasks;
 using NetCoreReact.Helpers;
 using Microsoft.AspNetCore.Http;
+using NetCoreReact.Models.DTO;
+using System.Collections.Generic;
 
 namespace NetCoreReact.Services.Business
 {
@@ -24,7 +26,7 @@ namespace NetCoreReact.Services.Business
                 CookieHelper.AddCookie(response, "Avatar-Url", payload.Picture);
 
                 res.Success = true;
-                res.Data = jwt;
+                res.Data = new List<string>() { jwt };
 
             }
 			catch (Exception e)

@@ -2,7 +2,7 @@
 using NetCoreReact.Models;
 using System.Threading.Tasks;
 
-namespace NetCoreReact.Services.Business
+namespace NetCoreReact.Services.Business.Interfaces
 {
 	public interface ISampleService
 	{

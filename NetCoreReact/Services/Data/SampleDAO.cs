@@ -1,80 +1,44 @@
-﻿using NetCoreReact.Models;
+﻿using MongoDB.Driver;
+using NetCoreReact.Helpers;
+using NetCoreReact.Models.DB;
+using NetCoreReact.Models.DTO;
+using NetCoreReact.Services.Data.Interfaces;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
 using System.Threading.Tasks;
 
 namespace NetCoreReact.Services.Data
 {
-	public class SampleDAO : ISampleDAO
+	public class SampleDAO : IDAO<SampleDocument, DataResponse<SampleDocument>>
 	{
-		private readonly string _conn;
+		private readonly IMongoCollection<SampleDocument> _participants;
 
-		public SampleDAO(string conn)
+		public SampleDAO(string connectionString, string databaseName, string collectionName)
 		{
-			this._conn = conn;
-		}
-
-		public async Task<ParticipantsModel> UnauthenticatedSampleGet()
-		{
-			var model = new ParticipantsModel();
-			var users = new List<string>();
-
 			try
 			{
-				using (SqlConnection connection = new SqlConnection(_conn))
-				{
-					await connection.OpenAsync();
-
-					using (SqlCommand command = new SqlCommand(@"dbo.[UnauthenticatedSampleGet]", connection))
-					{
-						command.CommandType = CommandType.StoredProcedure;
-
-						using (SqlDataReader reader = await command.ExecuteReaderAsync())
-						{
-							while (await reader.ReadAsync())
-							{
-								users.Add(await reader.GetFieldValueAsync<string>(0));
-							}
-							reader.Close();
-						}
-					}
-					connection.Close();
-				}
-				model.Participants = users;
+				var client = new MongoClient(connectionString);
+				var database = client.GetDatabase(databaseName);
+				_participants = database.GetCollection<SampleDocument>(collectionName);
 			}
 			catch (Exception e)
 			{
+				LoggerHelper.Log(e);
 				throw e;
 			}
-
-			return model;
 		}
 
-		public async void AddParticipant(InputModel user)
+		public async Task<DataResponse<SampleDocument>> GetAll()
 		{
 			try
-			{
-				using (SqlConnection connection = new SqlConnection(_conn))
+			{ 
+				var participants = await _participants.FindAsync(x => true);
+				var participantsList = await participants.ToListAsync();
+				return new DataResponse<SampleDocument>()
 				{
-					await connection.OpenAsync();
-
-					using (SqlCommand command = new SqlCommand(@"dbo.[AddParticipant]", connection))
-					{
-						command.Parameters.Add("@Name", SqlDbType.VarChar, 50).Value = user.Name;
-						command.Parameters.Add("@Taken", SqlDbType.Int).Value = 0;
-						command.Parameters.Add("@Havedrawn", SqlDbType.Int).Value = 0;
-						command.Parameters.Add("@Wishlist", SqlDbType.VarChar, -1).Value = user.Wishlist;
-
-						command.CommandType = CommandType.StoredProcedure;
-
-						SqlDataReader reader = await command.ExecuteReaderAsync();
-
-						reader.Close();
-					}
-					connection.Close();
-				}
+					Data = participantsList,
+					Success = true
+				};
 			}
 			catch (Exception e)
 			{
@@ -82,150 +46,17 @@ namespace NetCoreReact.Services.Data
 			}
 		}
 
-		public async Task<int> DoesParticipantExist(string participantName)
-		{
-			var userExists = 0;
-
-			try
-			{
-				using (SqlConnection connection = new SqlConnection(_conn))
-				{
-					await connection.OpenAsync();
-
-					using (SqlCommand command = new SqlCommand(@"dbo.[DoesParticipantExist]", connection))
-					{
-						command.Parameters.Add("@Name", SqlDbType.VarChar, 50).Value = participantName;
-
-						command.CommandType = CommandType.StoredProcedure;
-
-						userExists = (int) await command.ExecuteScalarAsync();
-
-					}
-					connection.Close();
-				}
-			}
-			catch (Exception e)
-			{
-				throw e;
-			}
-
-			return userExists;
-		}
-
-		public async Task<int> GetNumberOfParticipants()
-		{
-			var numRows = 0;
-
-			try
-			{
-				using (SqlConnection connection = new SqlConnection(_conn))
-				{
-					await connection.OpenAsync();
-
-					using (SqlCommand command = new SqlCommand(@"dbo.[GetNumberOfParticipants]", connection))
-					{
-						command.CommandType = CommandType.StoredProcedure;
-
-						numRows = (int)await command.ExecuteScalarAsync();
-
-					}
-					connection.Close();
-				}
-			}
-			catch (Exception e)
-			{
-				throw e;
-			}
-
-			return numRows;
-		}
-
-		public async Task<int> HasParticipantDrawn(string participantName)
-		{
-			var hasDrawn = 1;
-
-			try
-			{
-				using (SqlConnection connection = new SqlConnection(_conn))
-				{
-					await connection.OpenAsync();
-
-					using (SqlCommand command = new SqlCommand(@"dbo.[HasParticipantDrawn]", connection))
-					{
-						command.Parameters.Add("@Name", SqlDbType.VarChar, 50).Value = participantName;
-
-						command.CommandType = CommandType.StoredProcedure;
-
-						hasDrawn = (int) await command.ExecuteScalarAsync();
-					}
-					connection.Close();
-				}
-			}
-			catch (Exception e)
-			{
-				throw e;
-			}
-
-			return hasDrawn;
-		}
-
-		public async Task<PresentModel> GetRandomParticipant(string participantName)
-		{
-			var secret = new PresentModel();
-
-			try
-			{
-				using (SqlConnection connection = new SqlConnection(_conn))
-				{
-					await connection.OpenAsync();
-
-					using (SqlCommand command = new SqlCommand(@"dbo.[GetRandomParticipant]", connection))
-					{
-						command.Parameters.Add("@Name", SqlDbType.VarChar, 50).Value = participantName;
-
-						command.CommandType = CommandType.StoredProcedure;
-
-						using (SqlDataReader reader = await command.ExecuteReaderAsync())
-						{
-							while (await reader.ReadAsync())
-							{
-								secret.Name = await reader.GetFieldValueAsync<string>(0);
-								secret.WishList = await reader.GetFieldValueAsync<string>(1);
-							}
-							reader.Close();
-						}
-					}
-					connection.Close();
-				}
-			}
-			catch (Exception e)
-			{
-				throw e;
-			}
-
-			return secret;
-		}
-
-		public async void SetTakenParticipant(string takenParticipantName)
+		public async Task<DataResponse<SampleDocument>> Get(string index)
 		{
 			try
 			{
-				using (SqlConnection connection = new SqlConnection(_conn))
+				var participants = await _participants.FindAsync(x => x.Id.Equals(index));
+				var participant = await participants.FirstOrDefaultAsync();
+				return new DataResponse<SampleDocument>()
 				{
-					await connection.OpenAsync();
-
-					using (SqlCommand command = new SqlCommand(@"dbo.[SetTakenParticipant]", connection))
-					{
-						command.Parameters.Add("@Name", SqlDbType.VarChar, 50).Value = takenParticipantName;
-
-						command.CommandType = CommandType.StoredProcedure;
-
-						SqlDataReader reader = await command.ExecuteReaderAsync();
-
-						reader.Close();
-					}
-					connection.Close();
-				}
+					Data = new List<SampleDocument>() { participant },
+					Success = true
+				};
 			}
 			catch (Exception e)
 			{
@@ -233,26 +64,16 @@ namespace NetCoreReact.Services.Data
 			}
 		}
 
-		public async void SetParticipantDrawFlag(string participantName)
+		public async Task<DataResponse<SampleDocument>> Add(SampleDocument participant)
 		{
 			try
-			{
-				using (SqlConnection connection = new SqlConnection(_conn))
+			{ 
+				await _participants.InsertOneAsync(participant);
+				return new DataResponse<SampleDocument>()
 				{
-					await connection.OpenAsync();
-
-					using (SqlCommand command = new SqlCommand(@"dbo.[SetParticipantDrawFlag]", connection))
-					{
-						command.Parameters.Add("@Name", SqlDbType.VarChar, 50).Value = participantName;
-
-						command.CommandType = CommandType.StoredProcedure;
-
-						SqlDataReader reader = await command.ExecuteReaderAsync();
-
-						reader.Close();
-					}
-					connection.Close();
-				}
+					Data = new List<SampleDocument>() { participant },
+					Success = true
+				};
 			}
 			catch (Exception e)
 			{
@@ -260,27 +81,33 @@ namespace NetCoreReact.Services.Data
 			}
 		}
 
-		public async void SaveDrawnParticipant(string takenParticipantName, string participantName)
+		public async Task<DataResponse<SampleDocument>> Update(string index, SampleDocument participant)
 		{
 			try
 			{
-				using (SqlConnection connection = new SqlConnection(_conn))
+				await _participants.ReplaceOneAsync(x => x.Id.Equals(index), participant);
+				return new DataResponse<SampleDocument>()
 				{
-					await connection.OpenAsync();
+					Data = new List<SampleDocument>() { participant },
+					Success = true
+				};
+			}
+			catch (Exception e)
+			{
+				throw e;
+			}
+		}
 
-					using (SqlCommand command = new SqlCommand(@"dbo.[SaveDrawnParticipant]", connection))
-					{
-						command.Parameters.Add("@Secret", SqlDbType.VarChar, 50).Value = takenParticipantName;
-						command.Parameters.Add("@Name", SqlDbType.VarChar, 50).Value = participantName;
-
-						command.CommandType = CommandType.StoredProcedure;
-
-						SqlDataReader reader = await command.ExecuteReaderAsync();
-
-						reader.Close();
-					}
-					connection.Close();
-				}
+		public async Task<DataResponse<SampleDocument>> Delete(string index)
+		{
+			try
+			{
+				await _participants.DeleteOneAsync(x => x.Id.Equals(index));
+				return new DataResponse<SampleDocument>()
+				{
+					Data = new List<SampleDocument>(),
+					Success = true
+				};
 			}
 			catch (Exception e)
 			{

@@ -144,7 +144,7 @@ export default function Login({ open, close }) {
       });
 
       if (response.success) {
-        login(response.data);
+        login(response.data[0]);
         setSuccess(true);
       } else {
         setErrors(response.errors);

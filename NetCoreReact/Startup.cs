@@ -12,13 +12,16 @@ using NetCoreReact.Services.Business;
 using NetCoreReact.Services.Data;
 using NetCoreReact.Services.WebSocket;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 using NetCoreReact.Services.ML;
 using NetCoreReact.Services.ML.Interfaces;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using NetCoreReact.Attributes;
 using Newtonsoft.Json;
+using NetCoreReact.Services.Data.Interfaces;
+using NetCoreReact.Services.Business.Interfaces;
+using NetCoreReact.Models.DB;
+using NetCoreReact.Models.DTO;
 
 namespace NetCoreReact
 {
@@ -91,15 +94,18 @@ namespace NetCoreReact
 			// Change development environment here (connection string to db or anything else necessary):
 			if (CurrentEnvironment.IsDevelopment())
 			{
-				services.AddSingleton<ISampleDAO>(service => new SampleDAO(Configuration["ConnectionStrings:LocalDB"]));
+				services.AddSingleton<IDAO<SampleDocument, DataResponse<SampleDocument>>>(service => new SampleDAO(
+					Configuration["ConnectionStrings:HerokuMongoDBConnection"],
+					Configuration["ConnectionStrings:HerokuMongoDBDatabase"],
+					Configuration["ConnectionStrings:HerokuMongoDBCollection"]));
 			}
 			else
 			{
-				services.AddSingleton<ISampleDAO>(service => new SampleDAO(Configuration["ConnectionStrings:AzureDB"]));
+				services.AddSingleton<IDAO<SampleDocument, DataResponse<SampleDocument>>>(service => new SampleDAO(
+					Configuration["ConnectionStrings:HerokuMongoDBConnection"],
+					Configuration["ConnectionStrings:HerokuMongoDBDatabase"],
+					Configuration["ConnectionStrings:HerokuMongoDBCollection"]));
 			}
-
-            //Entity Framework Core
-            services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(Configuration["ConnectionStrings:AzureDB"]));
 
 			// Inject dependencies here:
 			services.AddSingleton<ISampleService, SampleService>();

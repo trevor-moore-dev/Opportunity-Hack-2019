@@ -8,7 +8,7 @@ using NetCoreReact.Enums;
 using NetCoreReact.Helpers;
 using NetCoreReact.Models;
 using NetCoreReact.Models.ML;
-using NetCoreReact.Services.Business;
+using NetCoreReact.Services.Business.Interfaces;
 using NetCoreReact.Services.ML.Interfaces;
 
 namespace NetCoreReact.Controllers

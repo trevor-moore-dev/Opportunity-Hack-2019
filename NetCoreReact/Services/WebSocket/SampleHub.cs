@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using NetCoreReact.Helpers;
-using NetCoreReact.Services.Business;
+using NetCoreReact.Services.Business.Interfaces;
 
 namespace NetCoreReact.Services.WebSocket
 {
