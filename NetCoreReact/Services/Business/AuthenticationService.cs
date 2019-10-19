@@ -11,7 +11,7 @@ namespace NetCoreReact.Services.Business
 	{
 		public async Task<Response> AuthenticateGoogleToken(TokenModel token, HttpResponse response)
 		{
-            var resonse = new DataResponse<string>();
+            var res = new DataResponse<string>();
 
 			try
 			{
@@ -21,17 +21,18 @@ namespace NetCoreReact.Services.Business
 				LoggerHelper.Log(payload.ExpirationTimeSeconds.ToString());
 				CookieHelper.AddCookie(response, "User-Email", payload.Email);
 				CookieHelper.AddCookie(response, "Authorization-Token", jwt);
+                CookieHelper.AddCookie(response, "Avatar-Url", payload.Picture);
 
-                resonse.Success = true;
-                resonse.Data = jwt;
+                res.Success = true;
+                res.Data = jwt;
 
             }
 			catch (Exception e)
 			{
-                resonse.AddError("*", "Error authenticating with Google");
+                res.AddError("*", "Error authenticating with Google");
             }
 
-            return resonse;
+            return res;
 
         }
 	}

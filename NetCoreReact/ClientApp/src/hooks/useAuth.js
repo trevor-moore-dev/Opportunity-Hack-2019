@@ -49,6 +49,7 @@ export default function useAuth() {
 
   const logout = () => {
     Cookies.remove("Authorization-Token");
+    Cookies.remove("Avatar-Url");
     dispatch({
       type: "LOGOUT"
     });

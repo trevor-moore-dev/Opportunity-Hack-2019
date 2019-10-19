@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { makeStyles, fade } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -12,6 +12,9 @@ import SearchIcon from "@material-ui/icons/Search";
 import InputBase from "@material-ui/core/InputBase";
 import Login from "./Login";
 import useAuth from "../hooks/useAuth";
+import Cookies from "js-cookie";
+import { Avatar, Box, Menu, MenuItem } from "@material-ui/core";
+import DropDownArrow from "@material-ui/icons/ArrowDropDown";
 
 const drawerWidth = 240;
 
@@ -81,6 +84,27 @@ export default function NavigationBar({ handleDrawerOpen, open }) {
   const [loginOpen, setLoginOpen] = useState(false);
   const { getToken, logout, authState } = useAuth();
   const token = getToken();
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  useEffect(() => {
+    let avatar = Cookies.get("Avatar-Url");
+    if (avatar) setAvatarUrl(avatar);
+    else setAvatarUrl("");
+  }, [authState]);
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleClick = event => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleLogout = () => {
+    logout();
+    handleClose();
+  };
 
   return (
     <div className={classes.root}>
@@ -121,13 +145,36 @@ export default function NavigationBar({ handleDrawerOpen, open }) {
           </Button>
           <div className={classes.grow} />
           {authState.isAuthenticated ? (
-            <Button
-              color="inherit"
-              onClick={() => logout()}
-              className={classes.button}
-            >
-              Logout
-            </Button>
+            <>
+              <Box display="flex" alignItems="center" onClick={handleClick}>
+                <Avatar
+                  alt="Profile"
+                  src={avatarUrl}
+                  className={classes.avatar}
+                />
+                <DropDownArrow />
+              </Box>
+              <Menu
+                id="simple-menu"
+                anchorEl={anchorEl}
+                keepMounted
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+                getContentAnchorEl={null}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "center"
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "center"
+                }}
+              >
+                <MenuItem onClick={handleClose}>Profile</MenuItem>
+                <MenuItem onClick={handleClose}>Settings</MenuItem>
+                <MenuItem onClick={handleLogout}>Logout</MenuItem>
+              </Menu>
+            </>
           ) : (
             <Button
               color="inherit"
